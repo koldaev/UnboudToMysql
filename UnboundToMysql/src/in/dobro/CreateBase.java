@@ -16,6 +16,8 @@ import java.util.Properties;
 
 public class CreateBase {
 	
+	static String lang = "th";
+	
 	static Properties connInfo = new Properties();
 	static {
 		connInfo.put("characterEncoding","UTF8");
@@ -35,57 +37,59 @@ public class CreateBase {
 
 	public static void main(String[] args) throws SQLException, IOException {
 		
-		conn = DriverManager.getConnection("jdbc:mysql://localhost/bible_ara"+"?", connInfo);
+		conn = DriverManager.getConnection("jdbc:mysql://localhost/bible_"+lang+"?", connInfo);
 		
 		st=conn.createStatement();
 		//создаем базу данных
-		//st.executeUpdate("CREATE DATABASE bible_ara");
+		//st.executeUpdate("CREATE DATABASE bible_"+lang);
 		//создаем таблицу текста Библии
-		//createtexttable();
+		createtexttable();
 		//создаем таблицу книг Библии
-		//createbibletable();
+		createbibletable();
 		//экспортируем UnboundBible CSV в Mysql
-		//inserttextteable();
+		inserttextteable();
 		//наполняем таблицу книг и глав Библии
 		insertbibletable();
 	}
 
 	private static void insertbibletable() throws SQLException {
 		for(int i=1;i<=66;i++) {
-			countchapters = conn.prepareStatement("SELECT MAX(chapter) as maxchapter FROM `aratext` WHERE bible = " + i + ";");
+			countchapters = conn.prepareStatement("SELECT MAX(chapter) as maxchapter FROM `"+lang+"text` WHERE bible = " + i + ";");
 			if (countchapters.execute()) {
 				rcountchapters = countchapters.getResultSet();
 				if(rcountchapters.next())
 					chapters = rcountchapters.getInt(1);
 			}
-			insmysql2 = "INSERT INTO `arabible` (`idbible`, `biblename`, `chapters`) VALUES (" +
-					i + ",'" + names.arabible[i-1] + "'," + chapters + ");";
+			insmysql2 = "INSERT INTO `"+lang+"bible` (`idbible`, `biblename`, `chapters`) VALUES (" +
+					i + ",'" + names.thbible[i-1] + "'," + chapters + ");";
 			st.execute(insmysql2);
+			System.out.println(insmysql2);
 		}
 	}
 
 	private static void inserttextteable() throws IOException, SQLException {
-		File f = new File("./csv/ara.txt");
+		File f = new File("./csv/"+lang+".txt");
 		if (!f.canRead()) {
 			throw new FileNotFoundException("Файл '" + f.getAbsolutePath() + "' - не найден!");
 		} else {
+			
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
 			String line;
 			while ((line = reader.readLine()) != null) {
 				strline = line.split("_");
-				//System.out.println(strline[3]);
-				//INSERT INTO `rutext` (`bible`, `chapter`, `poem`, `poemtext`) VALUES
-				//(1, 1, 1, 'В начале сотворил Бог небо и землю. '),
-				insmysql = "INSERT INTO `aratext` (`bible`, `chapter`, `poem`, `poemtext`) VALUES" +
-						   "("+strline[0]+","+strline[1]+","+strline[2]+",'"+strline[3]+"');";
+				if(strline.length > 3) {
+				insmysql = "INSERT INTO `"+lang+"text` (`bible`, `chapter`, `poem`, `poemtext`) VALUES" +
+						   "("+strline[0]+","+strline[1]+","+strline[2]+",\""+strline[3]+"\");";
 				st.execute(insmysql);
+				System.out.println(insmysql);
+				}
 			}
 			reader.close();
 		}
 	}
 
 	private static void createbibletable() throws SQLException {
-		String createbibletable = "CREATE TABLE IF NOT EXISTS `arabible` (" + 
+		String createbibletable = "CREATE TABLE IF NOT EXISTS `"+lang+"bible` (" + 
 				"`idbible` int(11) NOT NULL," +
 				"`biblename` varchar(255) DEFAULT NULL," +
 				"`chapters` int(11) DEFAULT NULL," +
@@ -95,7 +99,7 @@ public class CreateBase {
 	}
 
 	private static void createtexttable() throws SQLException {
-		String createtexttable = "CREATE TABLE IF NOT EXISTS `aratext` (" + 
+		String createtexttable = "CREATE TABLE IF NOT EXISTS `"+lang+"text` (" + 
 				"`_id` int(255) NOT NULL AUTO_INCREMENT," +
 				"`bible` int(11) NOT NULL," +
 				"`chapter` int(11) DEFAULT NULL," +
