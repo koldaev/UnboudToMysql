@@ -16,7 +16,7 @@ import java.util.Properties;
 
 public class CreateBase {
 	
-	static String lang = "th";
+	static String lang = "tl";
 	
 	static Properties connInfo = new Properties();
 	static {
@@ -61,7 +61,7 @@ public class CreateBase {
 					chapters = rcountchapters.getInt(1);
 			}
 			insmysql2 = "INSERT INTO `"+lang+"bible` (`idbible`, `biblename`, `chapters`) VALUES (" +
-					i + ",'" + names.thbible[i-1] + "'," + chapters + ");";
+					i + ",\"" + names.tlbible[i-1] + "\"," + chapters + ");";
 			st.execute(insmysql2);
 			System.out.println(insmysql2);
 		}
